@@ -2,6 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
+var languageButtonsEl = document.querySelector("#language-buttons")
 
 var formSubmitHandler = function(event) {
     //prevents the browser from sending the form's input data to a URL
@@ -20,6 +21,18 @@ var formSubmitHandler = function(event) {
         }
 };
 
+var buttonClickHandler = function(event) {
+  // get the language attribute from the clicked element
+  var language = event.target.getAttribute("data-language");
+
+  if (language) {
+    getFeaturedRepos(language);
+
+    // clear old content
+    repoContainerEl.textContent = "";
+  }
+};
+
 //user allows us to input any user on github
 var getUserRepos = function(user) {
     //format the github api url with the user info
@@ -29,8 +42,10 @@ var getUserRepos = function(user) {
     fetch(apiUrl).then(function(response){
         //if response is successful
         if (response.ok) {
-        response.json().then(function(data) {
-            displayRepos(data, user);
+            console.log(response);
+            response.json().then(function(data) {
+                console.log(data);
+                displayRepos(data, user);
         });
         //if response is not valid
         }else {
@@ -43,6 +58,23 @@ var getUserRepos = function(user) {
         });
 
 };
+
+var getFeaturedRepos = function(language) {
+    //will format the url to search for the language type the user wants to see
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+
+    //allowing search data to display and adding error handling
+    fetch(apiUrl).then(function(response) {
+        if (response.ok) {
+            response.json().then(function(data) {
+            displayRepos(data.items, language);
+            });
+        } else {
+            alert('Error: GitHub User Not Found');
+        }
+    });
+};
+
 
 var displayRepos = function(repos, searchTerm) {
     //check if api returned any repos
@@ -90,3 +122,4 @@ var displayRepos = function(repos, searchTerm) {
 
 //add event listener to form
 userFormEl.addEventListener("submit", formSubmitHandler);
+languageButtonsEl.addEventListener("click", buttonClickHandler);
